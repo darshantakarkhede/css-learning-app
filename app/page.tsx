@@ -1,65 +1,128 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
+// ============================================================
+// page.tsx — App shell
+// Orchestrates: TopBar, Sidebar, WelcomeScreen / ContentArea
+// ============================================================
+
+import React, { useState, useCallback, useEffect } from "react";
+import { Lesson } from "@/types";
+import { allLessons, lessonMap } from "@/data";
+import { useProgress } from "@/hooks/useProgress";
+import { useTheme } from "@/hooks/useTheme";
+import { useEditor } from "@/hooks/useEditor";
+import Sidebar from "@/components/Sidebar";
+import TopBar from "@/components/TopBar";
+import ContentArea from "@/components/ContentArea";
+import WelcomeScreen from "@/components/WelcomeScreen";
+
+export default function HomePage() {
+  const { theme, toggleTheme } = useTheme();
+  const {
+    progress,
+    hydrated,
+    completeLesson,
+    completeChallenge,
+    visitLesson,
+    isLessonComplete,
+  } = useProgress();
+
+  const { getCSS, updateCSS, resetCSS, setActiveLesson } = useEditor();
+
+  const [activeLesson, setActiveLessonState] = useState<Lesson | null>(null);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  // On hydration, restore last visited lesson
+  useEffect(() => {
+    if (hydrated && progress.lastVisitedLesson) {
+      const lesson = lessonMap[progress.lastVisitedLesson];
+      if (lesson) {
+        setActiveLessonState(lesson);
+        setActiveLesson(lesson.id, lesson.defaultCSS);
+      }
+    }
+  // Only run once on hydration
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hydrated]);
+
+  const handleSelectLesson = useCallback(
+    (lesson: Lesson) => {
+      setActiveLessonState(lesson);
+      setActiveLesson(lesson.id, lesson.defaultCSS);
+      visitLesson(lesson.id);
+    },
+    [setActiveLesson, visitLesson]
+  );
+
+  const handleCSSChange = useCallback(
+    (css: string) => {
+      if (activeLesson) updateCSS(activeLesson.id, css);
+    },
+    [activeLesson, updateCSS]
+  );
+
+  const handleReset = useCallback(() => {
+    if (activeLesson) resetCSS(activeLesson.id, activeLesson.defaultCSS);
+  }, [activeLesson, resetCSS]);
+
+  const handleComplete = useCallback(() => {
+    if (activeLesson) completeLesson(activeLesson.id);
+  }, [activeLesson, completeLesson]);
+
+  const handleChallengeComplete = useCallback(
+    (challengeId: string) => {
+      completeChallenge(challengeId);
+    },
+    [completeChallenge]
+  );
+
+  const currentCSS = activeLesson
+    ? getCSS(activeLesson.id, activeLesson.defaultCSS)
+    : "";
+
+  const lastLesson = progress.lastVisitedLesson
+    ? lessonMap[progress.lastVisitedLesson] ?? null
+    : null;
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
+    <div className="flex flex-col h-full bg-[var(--bg)]">
+      <TopBar
+        theme={theme}
+        onToggleTheme={toggleTheme}
+        onOpenSidebar={() => setSidebarOpen(true)}
+      />
+
+      <div className="flex flex-1 overflow-hidden">
+        <Sidebar
+          activeLessonId={activeLesson?.id ?? null}
+          completedLessons={progress.completedLessons}
+          onSelectLesson={handleSelectLesson}
+          isOpen={sidebarOpen}
+          onClose={() => setSidebarOpen(false)}
         />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
+
+        <main className="flex-1 flex flex-col overflow-hidden">
+          {activeLesson ? (
+            <ContentArea
+              lesson={activeLesson}
+              css={currentCSS}
+              isCompleted={isLessonComplete(activeLesson.id)}
+              completedChallenges={progress.completedChallenges}
+              onCSSChange={handleCSSChange}
+              onReset={handleReset}
+              onComplete={handleComplete}
+              onChallengeComplete={handleChallengeComplete}
             />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
+          ) : (
+            <WelcomeScreen
+              completedCount={progress.completedLessons.length}
+              totalCount={allLessons.length}
+              lastLesson={lastLesson}
+              onSelectLesson={handleSelectLesson}
+            />
+          )}
+        </main>
+      </div>
     </div>
   );
 }

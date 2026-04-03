@@ -1,8 +1,44 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/* ============================================================
+   CSS VARIABLES — Light & Dark themes
+   ============================================================ */
+
+:root,
+[data-theme="light"] {
+  --bg:            #f8fafc;
+  --surface:       #ffffff;
+  --sidebar-bg:    #ffffff;
+  --topbar-bg:     #ffffff;
+  --editor-bg:     #1e1e2e;
+  --editor-header: #f1f5f9;
+  --text:          #0f172a;
+  --text-muted:    #64748b;
+  --editor-text:   #cdd6f4;
+  --border:        #e2e8f0;
+  --hover-bg:      #f1f5f9;
+  --accent:        #6366f1;
+  --accent-light:  #818cf8;
+  --background:    #f8fafc;
+  --foreground:    #0f172a;
+}
+
+[data-theme="dark"] {
+  --bg:            #0f172a;
+  --surface:       #1e293b;
+  --sidebar-bg:    #1e293b;
+  --topbar-bg:     #1e293b;
+  --editor-bg:     #0d1117;
+  --editor-header: #161b22;
+  --text:          #f1f5f9;
+  --text-muted:    #94a3b8;
+  --editor-text:   #e2e8f0;
+  --border:        #334155;
+  --hover-bg:      #334155;
+  --accent:        #818cf8;
+  --accent-light:  #a5b4fc;
+  --background:    #0f172a;
+  --foreground:    #f1f5f9;
 }
 
 @theme inline {
@@ -12,15 +48,33 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Inter", sans-serif;
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 999px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
+/* Focus ring */
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* Code editor monospace */
+textarea[spellcheck="false"] {
+  font-family: 'Fira Code', 'Cascadia Code', 'JetBrains Mono', 'Consolas', monospace;
+  tab-size: 2;
+}
+
+/* Prose helpers */
+.prose-custom code {
+  background: var(--hover-bg);
+  color: var(--accent);
+  padding: 1px 5px;
+  border-radius: 4px;
+  font-size: 0.85em;
 }

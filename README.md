@@ -1,5 +1,20 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
+# 🎨 CSS Learner — Interactive CSS Course
+
+A Duolingo-like interactive CSS learning web app built with **Next.js 15**, **TypeScript**, and **Tailwind CSS**.
+
+## ✨ Features
+
+| Feature | Description |
+|---|---|
+| 📖 Structured Curriculum | 12 lessons across Beginner → Intermediate → Advanced |
+| ⚡ Live Editor | Write CSS, see changes instantly in a sandboxed iframe |
+| 🏋️ Practice Challenges | Real exercises with your output vs expected comparison |
+| 💾 Progress Tracking | Completed lessons/challenges saved to `localStorage` |
+| 🌗 Dark/Light Mode | System-aware, toggle with one click |
+| 📱 Responsive | Mobile drawer sidebar + desktop persistent sidebar |
+
 ## Getting Started
 
 First, run the development server:
